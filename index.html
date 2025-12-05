@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <title>SAE 303 AR Project</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            position: fixed;
+        }
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-family: Arial;
+            z-index: 1000;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        #main-scene, #overlay-scene {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        #overlay-scene {
+            display: none;
+            z-index: 500;
+            background: transparent;
+            pointer-events: none;
+        }
+        #overlay-scene > * {
+            pointer-events: auto;
+        }
+        #back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 15px 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 25px;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 600;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            font-weight: bold;
+        }
+        #back-button:hover {
+            background: white;
+        }
+        #sphere-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #sphere-canvas {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #FFD700, #FFA500, #FF8C00);
+            box-shadow: 
+                0 0 60px rgba(255, 215, 0, 0.6),
+                inset -20px -20px 40px rgba(0,0,0,0.3),
+                inset 20px 20px 40px rgba(255,255,255,0.3);
+            animation: float 3s ease-in-out infinite, glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        @keyframes glow {
+            from { box-shadow: 0 0 60px rgba(255, 215, 0, 0.6), inset -20px -20px 40px rgba(0,0,0,0.3), inset 20px 20px 40px rgba(255,255,255,0.3); }
+            to { box-shadow: 0 0 80px rgba(255, 215, 0, 0.8), inset -20px -20px 40px rgba(0,0,0,0.3), inset 20px 20px 40px rgba(255,255,255,0.3); }
+        }
+        #overlay-title {
+            position: fixed;
+            top: 100px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+            z-index: 550;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">Chargement de la caméra...</div>
+    <button id="back-button">← Retour</button>
+    <div id="overlay-title">Scène Camembert</div>
+    
+    <!-- Scène principale AR -->
+    <a-scene 
+        id="main-scene"
+        mindar-image="imageTargetSrc: ./targets.mind; autoStart: false;" 
+        color-space="sRGB"
+        renderer="colorManagement: true, physicallyCorrectLights" 
+        vr-mode-ui="enabled: false"
+        device-orientation-permission-ui="enabled: false">
+
+        <a-assets>
+            <img id="camembert" src="./img/camembert.png" crossorigin="anonymous" />
+            <img id="affiche" src="./img/info.png" crossorigin="anonymous" />
+        </a-assets>
+
+        <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;" raycaster="objects: .clickable"></a-camera>
+
+        <a-entity mindar-image-target="targetIndex: 0">
+            <!-- Affiche complète en arrière-plan -->
+            <a-image 
+                src="#affiche" 
+                position="0 0 -0.01" 
+                height="2" 
+                width="1.4"
+                opacity="0.95">
+            </a-image>
+            
+            <!-- Boutons interactifs superposés -->
+            <a-image 
+                id="camembert-btn"
+                src="#camembert" 
+                position="-0.22 -0.6 0" 
+                height="0.4" 
+                width="0.4"
+                class="clickable">
+            </a-image>
+        </a-entity>
+    </a-scene>
+
+    <!-- Scène overlay pour Camembert -->
+    <div id="overlay-scene">
+        <div id="sphere-container">
+            <div id="sphere-canvas"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mainScene = document.querySelector('#main-scene');
+            const overlayScene = document.querySelector('#overlay-scene');
+            const loadingEl = document.getElementById('loading');
+            const backButton = document.getElementById('back-button');
+            const overlayTitle = document.getElementById('overlay-title');
+            const camembertBtn = document.querySelector('#camembert-btn');
+            
+            // Gestion du chargement
+            mainScene.addEventListener('loaded', function() {
+                console.log('Scene loaded');
+                loadingEl.style.display = 'none';
+            });
+
+            // Démarrer MindAR
+            mainScene.addEventListener('renderstart', function() {
+                const arSystem = mainScene.systems["mindar-image-system"];
+                if (arSystem) {
+                    arSystem.start();
+                }
+            });
+
+            // Fonction pour vérifier si un point touche l'objet 3D
+            function checkIntersection(x, y) {
+                const camera = mainScene.camera;
+                const raycaster = new THREE.Raycaster();
+                const mouse = new THREE.Vector2();
+                
+                // Convertir les coordonnées écran en coordonnées normalisées
+                mouse.x = (x / window.innerWidth) * 2 - 1;
+                mouse.y = -(y / window.innerHeight) * 2 + 1;
+                
+                raycaster.setFromCamera(mouse, camera);
+                
+                // Récupérer l'objet 3D du bouton camembert
+                const camembertObject = camembertBtn.object3D;
+                const intersects = raycaster.intersectObject(camembertObject, true);
+                
+                return intersects.length > 0;
+            }
+
+            // Gestion du touch sur mobile
+            let touchStartPos = null;
+            
+            mainScene.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 0) {
+                    touchStartPos = {
+                        x: e.touches[0].clientX,
+                        y: e.touches[0].clientY
+                    };
+                }
+            }, { passive: true });
+            
+            mainScene.addEventListener('touchend', function(e) {
+                if (touchStartPos && e.changedTouches.length > 0) {
+                    const touch = e.changedTouches[0];
+                    // Vérifier que c'est un tap et pas un swipe
+                    const dx = Math.abs(touch.clientX - touchStartPos.x);
+                    const dy = Math.abs(touch.clientY - touchStartPos.y);
+                    
+                    if (dx < 20 && dy < 20) {
+                        if (checkIntersection(touch.clientX, touch.clientY)) {
+                            e.preventDefault();
+                            showOverlayScene();
+                        }
+                    }
+                    touchStartPos = null;
+                }
+            }, { passive: false });
+
+            // Gestion du clic sur desktop
+            mainScene.addEventListener('click', function(e) {
+                if (checkIntersection(e.clientX, e.clientY)) {
+                    showOverlayScene();
+                }
+            });
+
+            // Bouton retour
+            backButton.addEventListener('click', function() {
+                returnToMain();
+            });
+
+            // Fonction pour afficher la scène overlay
+            function showOverlayScene() {
+                // On garde la scène AR visible pour conserver le fond caméra
+                overlayScene.style.display = 'block';
+                backButton.style.display = 'block';
+                overlayTitle.style.display = 'block';
+                // Cacher les éléments AR mais garder la caméra
+                document.querySelector('#main-scene a-entity[mindar-image-target]').setAttribute('visible', 'false');
+            }
+
+            // Fonction pour retourner à la scène principale
+            function returnToMain() {
+                overlayScene.style.display = 'none';
+                backButton.style.display = 'none';
+                overlayTitle.style.display = 'none';
+                // Réafficher les éléments AR
+                document.querySelector('#main-scene a-entity[mindar-image-target]').setAttribute('visible', 'true');
+            }
+
+            // Gestion des erreurs
+            window.addEventListener('error', function(e) {
+                console.error('Erreur:', e.message);
+                loadingEl.textContent = 'Erreur: ' + e.message;
+            });
+        });
+    </script>
+</body>
+</html>
