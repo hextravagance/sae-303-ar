@@ -49,67 +49,154 @@
         #overlay-scene > * {
             pointer-events: auto;
         }
+        
+        /* Container des humains */
+        #humans-container {
+            width: 100%;
+            height: calc(100% - 120px);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-content: center;
+            padding: 70px 10px 10px 10px;
+            gap: 4px;
+            overflow: hidden;
+        }
+        
+        /* Silhouette humaine stylisée */
+        .human-icon {
+            --human-color: #4CAF50;
+            width: 18px;
+            height: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.4s ease;
+        }
+        .human-icon.hidden {
+            display: none;
+        }
+        .human-head {
+            width: 9px;
+            height: 9px;
+            background: var(--human-color);
+            border-radius: 50%;
+            margin-bottom: 2px;
+        }
+        .human-body {
+            width: 12px;
+            height: 16px;
+            background: var(--human-color);
+            border-radius: 3px 3px 0 0;
+        }
+        .human-legs {
+            width: 12px;
+            height: 10px;
+            background: var(--human-color);
+            border-radius: 0 0 2px 2px;
+            position: relative;
+        }
+        .human-legs::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 100%;
+            background: rgba(0,0,0,0.3);
+        }
+        
+        /* Stats display */
+        #stats-display {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            text-align: right;
+            color: white;
+            font-family: Arial, sans-serif;
+            z-index: 560;
+            display: none;
+            background: rgba(0,0,0,0.8);
+            padding: 10px 15px;
+            border-radius: 10px;
+        }
+        #stats-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        #stats-label {
+            font-size: 14px;
+            color: #ccc;
+        }
+        
+        /* Boutons secteurs */
+        #sector-buttons {
+            display: none;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            padding: 12px;
+            background: rgba(0,0,0,0.95);
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 560;
+        }
+        .sector-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 15px;
+            font-size: 11px;
+            font-family: Arial, sans-serif;
+            cursor: pointer;
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+            white-space: nowrap;
+        }
+        .sector-btn:active {
+            transform: scale(0.95);
+        }
+        .sector-btn.medical { background: #e91e63; }
+        .sector-btn.commerce { background: #2196f3; }
+        .sector-btn.numerique { background: #9c27b0; }
+        .sector-btn.langues { background: #ff9800; }
+        .sector-btn.industrie { background: #607d8b; }
+        .sector-btn.active {
+            box-shadow: 0 0 10px currentColor;
+            transform: scale(1.05);
+        }
+        
         #back-button {
             position: fixed;
             top: 20px;
             left: 20px;
-            padding: 15px 30px;
-            background: rgba(255, 255, 255, 0.9);
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
             border: none;
-            border-radius: 25px;
-            font-size: 18px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: Arial, sans-serif;
             cursor: pointer;
             z-index: 600;
             display: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            font-weight: 500;
         }
         #back-button:hover {
-            background: white;
+            background: #0056b3;
         }
-        #sphere-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        #sphere-canvas {
-            width: 300px;
-            height: 300px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #FFD700, #FFA500, #FF8C00);
-            box-shadow: 
-                0 0 60px rgba(255, 215, 0, 0.6),
-                inset -20px -20px 40px rgba(0,0,0,0.3),
-                inset 20px 20px 40px rgba(255,255,255,0.3);
-            animation: float 3s ease-in-out infinite, glow 2s ease-in-out infinite alternate;
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
-        @keyframes glow {
-            from { box-shadow: 0 0 60px rgba(255, 215, 0, 0.6), inset -20px -20px 40px rgba(0,0,0,0.3), inset 20px 20px 40px rgba(255,255,255,0.3); }
-            to { box-shadow: 0 0 80px rgba(255, 215, 0, 0.8), inset -20px -20px 40px rgba(0,0,0,0.3), inset 20px 20px 40px rgba(255,255,255,0.3); }
-        }
-        #overlay-title {
-            position: fixed;
-            top: 100px;
-            width: 100%;
-            text-align: center;
-            color: white;
-            font-family: Arial, sans-serif;
-            font-size: 24px;
-            z-index: 550;
-            display: none;
+        #back-button:active {
+            background: #004494;
         }
     </style>
 </head>
 <body>
     <div id="loading">Chargement de la caméra...</div>
-    <button id="back-button">← Retour</button>
-    <div id="overlay-title">Scène Camembert</div>
+    <button id="back-button">Retour</button>
     
     <!-- Scène principale AR -->
     <a-scene 
@@ -128,7 +215,6 @@
         <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;" raycaster="objects: .clickable"></a-camera>
 
         <a-entity mindar-image-target="targetIndex: 0">
-            <!-- Affiche complète en arrière-plan -->
             <a-image 
                 src="#affiche" 
                 position="0 0 -0.01" 
@@ -137,7 +223,6 @@
                 opacity="0.95">
             </a-image>
             
-            <!-- Boutons interactifs superposés -->
             <a-image 
                 id="camembert-btn"
                 src="#camembert" 
@@ -149,10 +234,18 @@
         </a-entity>
     </a-scene>
 
-    <!-- Scène overlay pour Camembert -->
     <div id="overlay-scene">
-        <div id="sphere-container">
-            <div id="sphere-canvas"></div>
+        <div id="stats-display">
+            <div id="stats-number">1156</div>
+            <div id="stats-label">étudiants</div>
+        </div>
+        <div id="humans-container"></div>
+        <div id="sector-buttons">
+            <button class="sector-btn medical active" data-count="1156" data-color="#e91e63">Medical (1156)</button>
+            <button class="sector-btn commerce" data-count="940" data-color="#2196f3">Commerce (940)</button>
+            <button class="sector-btn numerique" data-count="484" data-color="#9c27b0">Numerique (484)</button>
+            <button class="sector-btn langues" data-count="450" data-color="#ff9800">Langues (450)</button>
+            <button class="sector-btn industrie" data-count="295" data-color="#607d8b">Industrie (295)</button>
         </div>
     </div>
 
@@ -162,16 +255,83 @@
             const overlayScene = document.querySelector('#overlay-scene');
             const loadingEl = document.getElementById('loading');
             const backButton = document.getElementById('back-button');
-            const overlayTitle = document.getElementById('overlay-title');
             const camembertBtn = document.querySelector('#camembert-btn');
             
-            // Gestion du chargement
+            // Variables pour les stats - 1 icone = 10 étudiants
+            const TOTAL_ICONS = 116;
+            const humansContainer = document.getElementById('humans-container');
+            const statsNumber = document.getElementById('stats-number');
+            const statsLabel = document.getElementById('stats-label');
+            const statsDisplay = document.getElementById('stats-display');
+            const sectorButtons = document.getElementById('sector-buttons');
+            let humansCreated = false;
+            
+            function createHumans() {
+                if (humansCreated) return;
+                humansContainer.innerHTML = '';
+                for (let i = 0; i < TOTAL_ICONS; i++) {
+                    const human = document.createElement('div');
+                    human.className = 'human-icon';
+                    human.innerHTML = '<div class="human-head"></div><div class="human-body"></div><div class="human-legs"></div>';
+                    human.dataset.index = i;
+                    humansContainer.appendChild(human);
+                }
+                humansCreated = true;
+            }
+            
+            function updateHumans(count, color, label) {
+                const displayCount = Math.ceil(count / 10);
+                const humans = document.querySelectorAll('.human-icon');
+                
+                humans.forEach((human, index) => {
+                    if (index < displayCount) {
+                        human.classList.remove('hidden');
+                        human.style.setProperty('--human-color', color);
+                    } else {
+                        human.classList.add('hidden');
+                    }
+                });
+                
+                animateNumber(parseInt(statsNumber.textContent) || 0, count);
+                statsLabel.textContent = label;
+                statsNumber.style.color = color;
+            }
+            
+            function animateNumber(from, to) {
+                const duration = 500;
+                const start = performance.now();
+                
+                function update(currentTime) {
+                    const elapsed = currentTime - start;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const current = Math.floor(from + (to - from) * progress);
+                    statsNumber.textContent = current;
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(update);
+                    }
+                }
+                requestAnimationFrame(update);
+            }
+            
+            document.querySelectorAll('.sector-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.sector-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const count = parseInt(this.dataset.count);
+                    const color = this.dataset.color;
+                    const label = this.textContent.split('(')[0].trim();
+                    
+                    updateHumans(count, color, label);
+                });
+            });
+            
             mainScene.addEventListener('loaded', function() {
                 console.log('Scene loaded');
                 loadingEl.style.display = 'none';
             });
 
-            // Démarrer MindAR
             mainScene.addEventListener('renderstart', function() {
                 const arSystem = mainScene.systems["mindar-image-system"];
                 if (arSystem) {
@@ -179,26 +339,20 @@
                 }
             });
 
-            // Fonction pour vérifier si un point touche l'objet 3D
             function checkIntersection(x, y) {
                 const camera = mainScene.camera;
                 const raycaster = new THREE.Raycaster();
                 const mouse = new THREE.Vector2();
                 
-                // Convertir les coordonnées écran en coordonnées normalisées
                 mouse.x = (x / window.innerWidth) * 2 - 1;
                 mouse.y = -(y / window.innerHeight) * 2 + 1;
                 
                 raycaster.setFromCamera(mouse, camera);
-                
-                // Récupérer l'objet 3D du bouton camembert
-                const camembertObject = camembertBtn.object3D;
-                const intersects = raycaster.intersectObject(camembertObject, true);
+                const intersects = raycaster.intersectObject(camembertBtn.object3D, true);
                 
                 return intersects.length > 0;
             }
 
-            // Gestion du touch sur mobile
             let touchStartPos = null;
             
             mainScene.addEventListener('touchstart', function(e) {
@@ -213,52 +367,48 @@
             mainScene.addEventListener('touchend', function(e) {
                 if (touchStartPos && e.changedTouches.length > 0) {
                     const touch = e.changedTouches[0];
-                    // Vérifier que c'est un tap et pas un swipe
                     const dx = Math.abs(touch.clientX - touchStartPos.x);
                     const dy = Math.abs(touch.clientY - touchStartPos.y);
                     
-                    if (dx < 20 && dy < 20) {
-                        if (checkIntersection(touch.clientX, touch.clientY)) {
-                            e.preventDefault();
-                            showOverlayScene();
-                        }
+                    if (dx < 20 && dy < 20 && checkIntersection(touch.clientX, touch.clientY)) {
+                        e.preventDefault();
+                        showOverlayScene();
                     }
                     touchStartPos = null;
                 }
             }, { passive: false });
 
-            // Gestion du clic sur desktop
             mainScene.addEventListener('click', function(e) {
                 if (checkIntersection(e.clientX, e.clientY)) {
                     showOverlayScene();
                 }
             });
 
-            // Bouton retour
             backButton.addEventListener('click', function() {
                 returnToMain();
             });
 
-            // Fonction pour afficher la scène overlay
             function showOverlayScene() {
-                // On garde la scène AR visible pour conserver le fond caméra
+                createHumans();
                 overlayScene.style.display = 'block';
                 backButton.style.display = 'block';
-                overlayTitle.style.display = 'block';
-                // Cacher les éléments AR mais garder la caméra
-                document.querySelector('#main-scene a-entity[mindar-image-target]').setAttribute('visible', 'false');
+                statsDisplay.style.display = 'block';
+                sectorButtons.style.display = 'flex';
+                mainScene.style.visibility = 'hidden';
+                
+                setTimeout(function() {
+                    document.querySelector('.sector-btn.medical').click();
+                }, 100);
             }
 
-            // Fonction pour retourner à la scène principale
             function returnToMain() {
                 overlayScene.style.display = 'none';
                 backButton.style.display = 'none';
-                overlayTitle.style.display = 'none';
-                // Réafficher les éléments AR
-                document.querySelector('#main-scene a-entity[mindar-image-target]').setAttribute('visible', 'true');
+                statsDisplay.style.display = 'none';
+                sectorButtons.style.display = 'none';
+                mainScene.style.visibility = 'visible';
             }
 
-            // Gestion des erreurs
             window.addEventListener('error', function(e) {
                 console.error('Erreur:', e.message);
                 loadingEl.textContent = 'Erreur: ' + e.message;
